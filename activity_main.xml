@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context="com.dsm.eatting.MainActivity">
+<!-- 버튼과 날짜 표시기가 들어갈 레이아웃 -->
+<LinearLayout
+    android:id="@+id/ctrlBar"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true">
+    <!-- 이전 식단으로 가는 버튼 -->
+    <Button
+        android:id="@+id/Bprev"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/prev"/>
+    <!-- [날짜(요일)시간대]를 표시해줌 -->
+    <TextView
+        android:id="@+id/Tdate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:gravity="center_horizontal" />
+    <!-- 다음 식단으로 가는 버튼 -->
+    <Button
+        android:id="@+id/Bnext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/next"/>
+</LinearLayout>
+<!-- 검색 기능이 들어가는 레이아웃 -->
+<LinearLayout
+    android:id="@+id/searchBar"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/ctrlBar">
+    <!-- 검색할 음식을 입력하는 곳 -->
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="음식 검색"
+        android:inputType="text"
+        android:id="@+id/Msearch"/>
+    <!-- 입력한 음식을 검색하는 버튼 -->
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/Bsearch"
+        android:text="검색"/>
+</LinearLayout>
+<!-- 식단이 표시되는 레이아웃 -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_below="@id/searchBar">
+    <TextView
+        android:id="@+id/Tmenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>
+<!-- 알레르기 표가 표시되는 레이아웃 -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true">
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="*">
+        <TableRow>
+            <TextView />
+            <TextView
+                android:textColor="#000000"
+                android:gravity="center_horizontal"
+                android:text="알레르기 표"/>
+            <TextView />
+        </TableRow>
+        <TableRow>
+            <TextView android:text="①난류(가금류)"
+                android:textColor="#000000" />
+            <TextView android:text="②우유"
+                android:textColor="#000000" />
+            <TextView android:text="③메밀"
+                android:textColor="#000000" />
+
+        </TableRow>
+        <TableRow>
+            <TextView android:text="④땅콩"
+                android:textColor="#000000" />
+            <TextView android:text="⑤대두"
+                android:textColor="#000000" />
+            <TextView android:text="⑥밀"
+                android:textColor="#000000" />
+
+        </TableRow>
+        <TableRow>
+            <TextView android:text="⑦고등어"
+                android:textColor="#000000" />
+            <TextView android:text="⑧게"
+                android:textColor="#000000" />
+            <TextView android:text="⑨새우"
+                android:textColor="#000000" />
+
+        </TableRow>
+        <TableRow>
+            <TextView android:text="⑩돼지고기"
+                android:textColor="#000000" />
+            <TextView android:text="⑪복숭아"
+                android:textColor="#000000" />
+            <TextView android:text="⑫토마토"
+                android:textColor="#000000" />
+
+        </TableRow>
+        <TableRow>
+            <TextView android:text="⑬아황산염"
+                android:textColor="#000000" />
+        </TableRow>
+    </TableLayout>
+
+</LinearLayout>
+</RelativeLayout>
