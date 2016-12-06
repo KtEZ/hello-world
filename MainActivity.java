@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -18,8 +19,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -43,22 +47,28 @@ public class MainActivity extends AppCompatActivity {
     Button bprev;                                       //누르면 이전 식단을 보여주는 동작을 하게하는 버튼 객체
     Button bnext;                                       //누르면 다음 식단을 보여주는 동작을 하게하는 버튼 객체
 
-    String mealURL="http://www.dsm.hs.kr/segio/meal/meal.php";      //파싱해올 홈페이지 주소를 저장하는 문자열
+    int URLYear=calendar.get(Calendar.YEAR);
+    int URLMonth=calendar.get(Calendar.MONTH)+1;
+    int URLDay=calendar.get(Calendar.DAY_OF_MONTH);
+    String mealURL="http://www.dsm.hs.kr/segio/meal/meal.php?year="+URLYear+"&month="+URLMonth+"&day="+URLDay;      //파싱해올 홈페이지 주소를 저장하는 문자열
     String[][] mealTable=new String[3][7];             //일주일치 식단이 저장되는 문자열 배열
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         tdate = (TextView) findViewById(R.id.Tdate);                //객체를 xml레이아웃 부분과 연결
         tmenu = (TextView) findViewById(R.id.Tmenu);
         msearch=(EditText)findViewById(R.id.Msearch);
         bsearch=(Button)findViewById(R.id.Bsearch);
         bprev=(Button)findViewById(R.id.Bprev);
         bnext=(Button)findViewById(R.id.Bnext);
+
         ConnectivityManager manager = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);        //네트워크 권한 획득용 객체
         NetworkInfo mobile = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);       //데이터 네트워크에 연결되어있는지 확인용 객체
         NetworkInfo wifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);           //WIFI에 연결되어있는지 확인용 객체
+
         if (wifi.isConnected() || mobile.isConnected()) {                   //네트워크에 연결되있다면 그냥 다음으로 넘어감
         } else {
             Toast toast = Toast.makeText(getApplicationContext(), "인터넷에 연결되어있지 않습니다. 마지막에 저장된 정보를 불러옵니다.", Toast.LENGTH_LONG);
@@ -66,13 +76,17 @@ public class MainActivity extends AppCompatActivity {
             //moveTaskToBack(true);
             //finish();
             try {
-                FileInputStream fis;            //파일 불러오기용 객체
+                //FileInputStream fis;            //파일 불러오기용 객체
+                File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                File f;
                 BufferedReader buffer;          //파일 읽기용 객체
                 for(int i=0;i<7;i++) {
                     for (int j = 0; j < 3; j++) {
                         String fileName="mealTable"+Integer.toString(i)+Integer.toString(j)+".txt";     //파일 이름 설정
-                        fis = openFileInput(fileName);                                                     //파일 불러오기
-                        buffer = new BufferedReader(new InputStreamReader(fis));                          //읽어올 파일 설정
+                        f = new File(path, fileName);
+                        //fis = openFileInput(fileName);                                                     //파일 불러오기
+                        //buffer = new BufferedReader(new InputStreamReader(fis));                          //읽어올 파일 설정
+                        buffer = new BufferedReader(new FileReader(f));
                         mealTable[i][j]=buffer.readLine();                                               //데이터 추출뒤 배열에 저장
                         buffer.close();                                                                    //버퍼 종료
                     }
@@ -81,8 +95,8 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
-        jsoupAsyncTask.execute();           //파싱 시작
+
+        ParseStart();      //파싱 시작
         if (calendar.get(Calendar.HOUR_OF_DAY) < 8) {           //오전 8시 이전은 아침 식단 표시
             nowMeal = "아침";
             daymod=1;
@@ -94,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
             daymod=3;
         }
         displaySet();                                             //화면 설정 메소드로 넘김
+
         bsearch.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View view){                 //검색 버튼 기능
@@ -101,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 searchResult();                                   //검색 메소드로 넘김
             }
         });
+
         bprev.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {                   //이전 버튼 기능
@@ -110,6 +126,11 @@ public class MainActivity extends AppCompatActivity {
                     calendar.add(calendar.DAY_OF_MONTH, -1); //객체 날짜를 어제로 설정
                     if(week==1){                                 //일주일 시작점에 오면 전주 끝으로 설정
                         week=7;
+                        URLYear=calendar.get(Calendar.YEAR);
+                        URLMonth=calendar.get(Calendar.MONTH)+1;
+                        URLDay=calendar.get(Calendar.DAY_OF_MONTH);
+                        mealURL="http://www.dsm.hs.kr/segio/meal/meal.php?year="+URLYear+"&month="+URLMonth+"&day="+URLDay;
+                        ParseStart();
                     }else{                                       //일주일 중 현재 위치에서 어제로 이동
                         week-=1;
                     }
@@ -119,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 displaySet();                                     //화면 재설정
             }
         });
+
         bnext.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {                   //다음 버튼 기능
@@ -128,6 +150,11 @@ public class MainActivity extends AppCompatActivity {
                     calendar.add(calendar.DAY_OF_MONTH, 1);  //객체 날짜를 하루 내일로 설정
                     if(week==7){                                 //일주일 끝점에 오면 다음주 시작점으로 설정
                         week=1;
+                        URLYear=calendar.get(Calendar.YEAR);
+                        URLMonth=calendar.get(Calendar.MONTH)+1;
+                        URLDay=calendar.get(Calendar.DAY_OF_MONTH);
+                        mealURL="http://www.dsm.hs.kr/segio/meal/meal.php?year="+URLYear+"&month="+URLMonth+"&day="+URLDay;
+                        ParseStart();
                     }else{                                       //일주일 중 현재 위치에서 내일로 이동
                         week+=1;
                     }
@@ -137,7 +164,11 @@ public class MainActivity extends AppCompatActivity {
                 displaySet();                                     //화면 재설정
             }
         });
+    }
 
+    private void ParseStart(){
+        JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
+        jsoupAsyncTask.execute();
     }
 
     private void searchResult(){                                //입력한 음식을 검색하는 메소드
@@ -246,18 +277,26 @@ public class MainActivity extends AppCompatActivity {
                     mealTable[0][i]=breakfast.text();                               //파싱한 식단을 시간대에 맞춰서 배열에 저장
                     mealTable[1][i]=lunch.text();
                     mealTable[2][i]=dinner.text();
+                    //#sub_context > div > div.meal > table > tbody > tr:nth-child(14) > td.today
+                    //#sub_context > div > div.meal > table > tbody > tr:nth-child(15) > td.today
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
             try {
-                FileOutputStream fos;                                                //파일을 생성하는 객체
+                File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                File f;
+                FileWriter write;
+                //FileOutputStream fos;                                                //파일을 생성하는 객체
                 PrintWriter out;                                                     //파일에 입력하는 객체
                 for(int i=0;i<7;i++){
                     for(int j=0;j<3;j++) {
                         String fileName="mealTable"+Integer.toString(i)+Integer.toString(j)+".txt";         //파일 이름 설정
-                        fos = openFileOutput(fileName, Context.MODE_APPEND);                                 //텍스트 파일 생성
-                        out = new PrintWriter(fos);                                                           //입력할 파일 설정
+                        //fos = openFileOutput(fileName, Context.MODE_APPEND);                                 //텍스트 파일 생성
+                        //out = new PrintWriter(fos);                                                           //입력할 파일 설정
+                        f = new File(path, fileName);
+                        write = new FileWriter(f, false);
+                        out = new PrintWriter(write);
                         out.println(mealTable[i][j]);                                                        //파일에 식단 입력
                         out.close();                                                                           //입력 객체 종료
                     }
